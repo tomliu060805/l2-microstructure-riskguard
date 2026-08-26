@@ -1,0 +1,8 @@
+numpy>=1.23
+pandas>=1.5
+pyarrow>=10.0
+lightgbm>=3.3
+scipy>=1.9
+matplotlib>=3.6
+# 可选: 仅 NN 对照实验需要
+# torch>=1.13

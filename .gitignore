@@ -1,0 +1,22 @@
+# 数据(体积大, 且是机器本地的外部依赖) —— 不入库
+data/
+idxml_local/
+*.parquet
+*.npz
+*.pkl
+
+# 归档的中文旧稿(仅本地保留)
+_archive_zh/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# 日志与临时
+*.log
+logs/
+
+# 环境配置(含本机路径, 不入库)
+.env
+cache/

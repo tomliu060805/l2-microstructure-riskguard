@@ -71,6 +71,10 @@ riskguard/              ★ 交付线: 小盘规避层
   results/              各域结果 + recheck_2026/(两把新尺子的复查)
 longonly_falsified/     对照线: 大盘纯多头选股(已被测试段证伪, 如实保留)
 legacy_csi500/          前身单域版本, 五条模型层结论的原始证据
+ops/                    ★ 生产: 每周规避清单
+  weekly_riskguard.py   信号日打分 → 排名最差 N 只; 63交易日重训一次
+  run_weekly.sh         cron 入口(读 .env / 日志轮转 / 陈旧数据非零退出码)
+  README.md             安装、输出格式、与研究代码的三点差异
 docs/
   results_overview.md       完整结果总览
   frozen_test_config.md     ★ 测试段冻结配置(写于开封之前)
@@ -109,6 +113,27 @@ python riskguard/code/short_side_exclude.py --index csi1000
 python riskguard/code/robustness.py --index csi1000
 python riskguard/code/recheck_barra_null.py      # Barra 标尺 + 随机剔除零基准
 ```
+
+## 生产:每周规避清单
+
+研究结论的落地形态在 `ops/`。每周一次,输出「本周不建议持有」的个股排名。
+
+```bash
+cp .env.example .env          # 填数据根
+crontab -e                     # 30 17 * * 1 /path/to/repo/ops/run_weekly.sh >> ops/logs/cron.log 2>&1
+```
+
+两条设计上值得说明的取舍,细节见 `ops/README.md`:
+
+- **63 交易日重训一次,不是每周。** 每周重训只多 5 天样本,却让模型整体漂移,
+  且与回测口径不符 —— IR 3.47 是在 63 日节奏下测出来的。
+- **数据陈旧走非零退出码(3),不是日志里一行灰字。** 定时任务最危险的失败不是崩溃,
+  是数据源停更而任务照常"成功",每周准时输出一份看起来正常、实际早已过期的清单。
+
+脚本还会校验**因子源指纹**:模型状态钉死训练时的因子库,源变了直接拒绝预测。
+这不是多余的谨慎 —— 同一台机器上并存的两个因子库版本,因子**名字完全一样**,
+但 248 个里有 129 个取值口径不同,个别相关性低到 0.002。换源不报错、不缺列,
+模型照样出分,只是全错。
 
 ## 已知边界
 
